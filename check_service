@@ -1,0 +1,50 @@
+import requests
+from requests.auth import HTTPBasicAuth
+
+
+load_dotenv()
+USERNAME = os.getenv("SN_USER")
+PASSWORD = os.getenv("SN_PASS")
+INSTANCE = os.getenv("SN_INSTANCE")
+HEADERS = {
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+}
+
+def create_incident(short_description, description):
+    data = {
+        "short_description": short_description,
+        "description": description,
+        "urgency": "2",  # 1 = High, 2 = Medium, 3 = Low
+        "impact": "2"
+    }
+
+    response = requests.post(
+        API_URL,
+        auth=HTTPBasicAuth(USERNAME, PASSWORD),
+        headers=HEADERS,
+        json=data
+    )
+
+    if response.status_code == 201:
+        print("✅ Incident created successfully.")
+        print("Incident Number:", response.json()["result"]["number"])
+    else:
+        print("❌ Failed to create incident.")
+        print("Status:", response.status_code)
+        print("Response:", response.text)
+
+
+# --- Simulate a system error ---
+def check_service():
+    import subprocess
+    service = "apache2"
+    result = subprocess.run(["systemctl", "is-active", service], capture_output=True, text=True)
+    if "inactive" in result.stdout or result.returncode != 0:
+        create_incident(
+            short_description=f"{service} service is down",
+            description=f"The {service} service is not running on the server. Immediate attention required."
+        )
+
+if __name__ == "__main__":
+    check_service()

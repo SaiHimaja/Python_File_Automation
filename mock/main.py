@@ -1,0 +1,8 @@
+import requests
+
+def getWeather(city):
+    response =requests.get(f"https://api.weather.com/v1/{city}")
+    if response.status_code==200:
+        return response.json()
+    else:
+        raise ValueError("could not fetch weather data")
